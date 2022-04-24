@@ -64,18 +64,17 @@ public class ProductDao {
 	public Map<String,Object> getProductList(Search search) throws Exception{
 		Map<String,Object> map = new HashMap<String,Object>();
 		Connection con = DBUtil.getConnection();
-		
-		String sql = "SELECT * from PRODUCT ";
+		String sql = "SELECT p.*,t.*, NVL(t.tran_status_code,0) NTSC from PRODUCT p, transaction t where p.prod_no = t.prod_no(+) ";
 		if(search.getSearchCondition()!=null) {
-			if(search.getSearchCondition().equals("0") && !search.getSearchKeyword().equals("")) {
-				sql+= " where PROD_NO='" + search.getSearchKeyword()
+			if(search.getSearchCondition().equals("0")) {
+				sql+= " AND p.PROD_NO='" + search.getSearchKeyword()
 				+ "'";
-			} else if(search.getSearchCondition().equals("1") && !search.getSearchKeyword().equals("")) {
-				sql+=" where PROD_NAME like'%" + search.getSearchKeyword()
-				+ "%'";
+			} else if(search.getSearchCondition().equals("1")) {
+				sql+=" AND p.PROD_NAME='" + search.getSearchKeyword()
+				+ "'";
 			}
-		}
-		sql+=" order by prod_no";
+		}	
+		sql+=" order by p.prod_no";
 		System.out.println("ProductDao:: sql:: "+sql);
 		
 		//totalCount Get
@@ -113,6 +112,7 @@ public class ProductDao {
 			prod.setPrice(rs.getInt("price"));
 			prod.setFileName(rs.getString("image_file"));
 			prod.setRegDate(rs.getDate("reg_date"));
+			prod.setProTranCode(rs.getString("NTSC"));
 			
 			list.add(prod);
 		}
