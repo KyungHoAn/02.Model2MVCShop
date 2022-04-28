@@ -91,23 +91,27 @@ public class PurchaseDAO {
 	}
 	
 	public Map<String, Object> getPurchaseList(Search search, String buyerId) throws Exception{
+		System.out.println("==========getPurchaseList========");
 		Map<String,Object> map = new HashMap<String,Object>();
 		Connection con = DBUtil.getConnection();
 //		String sql = "SELECT*FROM transaction where buyer_id = ?";
-		String sql = "SELECT * \r\n"
-				+ " FROM transaction t, product p, users u\r\n"
-				+ " WHERE t.prod_no = p.prod_no AND t.buyer_id = u.user_id and buyer_id = ?";
+		String sql = "SELECT p.prod_no, u.user_id, t.receiver_name, t.receiver_phone, t.tran_no  \r\n"
+				+ " FROM transaction t, product p, users u \r\n"
+				+ " WHERE t.prod_no = p.prod_no AND t.buyer_id = u.user_id and t.buyer_id = '?' ";
 		
+		int totalCount = this.getTotalCount(sql);
+		System.out.println("purchaseDao: "+totalCount);
 		
+		sql = makeCurrentPageSql(sql, search);
 		PreparedStatement stmt = con.prepareStatement(
-				sql
-//				ResultSet.TYPE_SCROLL_INSENSITIVE,
-//				ResultSet.CONCUR_UPDATABLE
+				sql,
+				ResultSet.TYPE_SCROLL_INSENSITIVE,
+				ResultSet.CONCUR_UPDATABLE
 			);
-		
+		System.out.println("buyerId=====>>"+buyerId);
 		stmt.setString(1, buyerId);
 		ResultSet rs = stmt.executeQuery();
-		
+		System.out.println(search);
 //		rs.last();
 //		int total = rs.getRow();
 //		System.out.println("total:"+total);
@@ -117,7 +121,7 @@ public class PurchaseDAO {
 //		
 //		rs.absolute(search.getCurrentPage()*search.getPageSize()-search.getPageSize()+1);
 //		System.out.println("searchVO.getPage():"+search.getCurrentPage());
-		System.out.println("searchVO.getPageUnit():"+search.getPageSize());
+//		System.out.println("searchVO.getPageUnit():"+search.getPageSize());
 		
 		List<Purchase> list = new ArrayList<Purchase>();
 		while(rs.next()) {
@@ -158,10 +162,12 @@ public class PurchaseDAO {
 //			}
 //		}
 		
-		map.put("totalCount", new Integer(total));
+		map.put("totalCount", new Integer(totalCount));
 		System.out.println("list.size()"+list.size());
 		map.put("list",list);
 		System.out.println("map().size():"+map.size());
+		
+		rs.close();
 		con.close();
 		return map;
 	}
@@ -201,5 +207,37 @@ public class PurchaseDAO {
 		stmt.executeUpdate();
 		System.out.println("updatetrancode ¿Ï·á");
 		con.close();
+	}
+	
+	private int getTotalCount(String sql) throws Exception{
+		sql = "SELECT COUNT(*) "+
+		          "FROM ( " +sql+ ") countTable";
+		
+		Connection con = DBUtil.getConnection();
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		ResultSet rs = pStmt.executeQuery();
+		
+		int totalCount = 0;
+		if( rs.next() ){
+			totalCount = rs.getInt(1);
+		}
+		
+		pStmt.close();
+		con.close();
+		rs.close();
+		
+		return totalCount;
+	}
+	
+	private String makeCurrentPageSql(String sql, Search search) {
+		sql = 	"SELECT * "+ 
+				"FROM (	SELECT inner_table.* ,  ROWNUM AS row_seq " +
+								" FROM ( "+sql+" ) inner_table "+
+								" WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
+				"WHERE row_seq BETWEEN "+((search.getCurrentPage()-1)*search.getPageSize()+1) +" AND "+search.getCurrentPage()*search.getPageSize();
+	
+	System.out.println("ProductDao :: make SQL :: "+ sql);	
+	
+	return sql;
 	}
 }
