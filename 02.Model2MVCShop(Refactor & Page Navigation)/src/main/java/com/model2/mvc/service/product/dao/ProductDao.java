@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.spi.DirStateFactory.Result;
-
 import com.model2.mvc.common.Search;
 import com.model2.mvc.common.util.DBUtil;
 import com.model2.mvc.service.domain.Product;
@@ -64,7 +62,8 @@ public class ProductDao {
 	public Map<String,Object> getProductList(Search search) throws Exception{
 		Map<String,Object> map = new HashMap<String,Object>();
 		Connection con = DBUtil.getConnection();
-		String sql = "SELECT p.*,t.*, NVL(t.tran_status_code,0) NTSC from PRODUCT p, transaction t where p.prod_no = t.prod_no(+) ";
+		//String sql = "SELECT p.*,t.*, NVL(t.tran_status_code,0) NTSC from PRODUCT p, transaction t where p.prod_no = t.prod_no(+) ";
+		String sql = "SELECT p.prod_No, p.prod_name, p.price, p.prod_detail, NVL(t.tran_status_code,0) NTSC from product p, transaction t where p.prod_no = t.prod_no(+) ";
 		if(search.getSearchCondition()!=null) {
 			if(search.getSearchCondition().equals("0")) {
 				sql+= " AND p.PROD_NO='" + search.getSearchKeyword()
@@ -73,7 +72,7 @@ public class ProductDao {
 				sql+=" AND p.PROD_NAME='" + search.getSearchKeyword()
 				+ "'";
 			}
-		}	
+		}		
 		sql+=" order by p.prod_no";
 		System.out.println("ProductDao:: sql:: "+sql);
 		
@@ -108,10 +107,10 @@ public class ProductDao {
 			prod.setProdNo(rs.getInt("prod_no"));
 			prod.setProdName(rs.getString("prod_name"));
 			prod.setProdDetail(rs.getString("prod_detail"));
-			prod.setManuDate(rs.getString("manufacture_day"));
+//			prod.setManuDate(rs.getString("manufacture_day"));
 			prod.setPrice(rs.getInt("price"));
-			prod.setFileName(rs.getString("image_file"));
-			prod.setRegDate(rs.getDate("reg_date"));
+//			prod.setFileName(rs.getString("image_file"));
+//			prod.setRegDate(rs.getDate("reg_date"));
 			prod.setProTranCode(rs.getString("NTSC"));
 			
 			list.add(prod);
@@ -182,12 +181,12 @@ public class ProductDao {
 	
 	private String makeCurrentPageSql(String sql, Search search) {
 		sql = 	"SELECT * "+ 
-				"FROM (		SELECT inner_table. * ,  ROWNUM AS row_seq " +
-								" 	FROM (	"+sql+" ) inner_table "+
-								"	WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
+				"FROM (	SELECT inner_table.* ,  ROWNUM AS row_seq " +
+								" FROM ( "+sql+" ) inner_table "+
+								" WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
 				"WHERE row_seq BETWEEN "+((search.getCurrentPage()-1)*search.getPageSize()+1) +" AND "+search.getCurrentPage()*search.getPageSize();
 	
-	System.out.println("UserDAO :: make SQL :: "+ sql);	
+	System.out.println("ProductDao :: make SQL :: "+ sql);	
 	
 	return sql;
 	}
