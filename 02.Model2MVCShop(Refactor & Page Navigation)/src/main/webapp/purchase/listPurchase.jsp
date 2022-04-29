@@ -1,4 +1,5 @@
 
+<%@page import="java.util.ArrayList"%>
 <%@page import="com.model2.mvc.service.domain.Purchase"%>
 <%@page import="com.model2.mvc.service.domain.User"%>
 <%@page import="com.model2.mvc.common.Search"%>
@@ -17,7 +18,7 @@
 	int total = 0;
 	List<Purchase> list = null;
 	if(map != null){
-		total = ((Integer)map.get("count")).intValue();
+		total = ((Integer)map.get("totalCount")).intValue();
 		list = (List<Purchase>)map.get("list");
 	}
 	
@@ -89,7 +90,7 @@
 		int no = list.size();
 		for(int i=0; i<list.size(); i++){
 			Purchase purchase = (Purchase)list.get(i);
-	%>	
+	%>
 	
 	<tr class="ct_list_pop">
 		<td align="center">

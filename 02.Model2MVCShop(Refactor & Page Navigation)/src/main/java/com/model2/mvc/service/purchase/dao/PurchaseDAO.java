@@ -95,30 +95,34 @@ public class PurchaseDAO {
 		Map<String,Object> map = new HashMap<String,Object>();
 		Connection con = DBUtil.getConnection();
 //		String sql = "SELECT*FROM transaction where buyer_id = ?";
-		String sql = "SELECT p.prod_no, u.user_id, t.receiver_name, t.receiver_phone, t.tran_no  \r\n"
+		String sql = "SELECT t.prod_no, t.buyer_id, t.receiver_name, t.receiver_phone, t.tran_no ,t.tran_status_code \r\n"
+//		String sql = "SELECT t.* \r\n"
 				+ " FROM transaction t, product p, users u \r\n"
-				+ " WHERE t.prod_no = p.prod_no AND t.buyer_id = u.user_id and t.buyer_id = '?' ";
+				+ " WHERE t.prod_no = p.prod_no AND t.buyer_id = u.user_id \r\n"
+				+ " AND buyer_id = '"+buyerId+"' ";
 		
 		int totalCount = this.getTotalCount(sql);
 		System.out.println("purchaseDao: "+totalCount);
 		
 		sql = makeCurrentPageSql(sql, search);
 		PreparedStatement stmt = con.prepareStatement(
-				sql,
-				ResultSet.TYPE_SCROLL_INSENSITIVE,
-				ResultSet.CONCUR_UPDATABLE
+				sql
+//				,ResultSet.TYPE_SCROLL_INSENSITIVE,
+//				ResultSet.CONCUR_UPDATABLE
 			);
+		
 		System.out.println("buyerId=====>>"+buyerId);
-		stmt.setString(1, buyerId);
+//		stmt.setString(1, buyerId);
 		ResultSet rs = stmt.executeQuery();
 		System.out.println(search);
+		
 //		rs.last();
 //		int total = rs.getRow();
 //		System.out.println("total:"+total);
-//		
-//		
+		
+		
 //		map.put("count", new Integer(total));
-//		
+		
 //		rs.absolute(search.getCurrentPage()*search.getPageSize()-search.getPageSize()+1);
 //		System.out.println("searchVO.getPage():"+search.getCurrentPage());
 //		System.out.println("searchVO.getPageUnit():"+search.getPageSize());
@@ -129,7 +133,8 @@ public class PurchaseDAO {
 			vo.setProdNo(rs.getInt("prod_no"));
 			
 			User uvo = new User();
-			uvo.setUserId(rs.getString("user_id"));				
+//			uvo.setUserId(rs.getString("user_id"));
+			uvo.setUserId(buyerId);
 			
 			Purchase pvo = new Purchase();
 			pvo.setPurchaseProd(vo);
@@ -141,27 +146,6 @@ public class PurchaseDAO {
 			list.add(pvo);
 		}
 		
-//		if(total>0) {
-//			for(int i=0; i<search.getPageSize(); i++) {
-//				Product vo = new Product();
-//				vo.setProdNo(rs.getInt("prod_no"));
-//				
-//				User uvo = new User();
-//				uvo.setUserId(rs.getString("user_id"));				
-//				
-//				Purchase pvo = new Purchase();
-//				pvo.setPurchaseProd(vo);
-//				pvo.setBuyer(uvo);
-//				pvo.setReceiverName(rs.getString("receiver_name"));
-//				pvo.setReceiverPhone(rs.getString("receiver_phone"));
-//				pvo.setTranNo(rs.getInt("tran_no"));
-//				pvo.setTranCode(rs.getString("tran_status_code").trim());
-//				list.add(pvo);
-//				if(!rs.next())
-//					break;
-//			}
-//		}
-		
 		map.put("totalCount", new Integer(totalCount));
 		System.out.println("list.size()"+list.size());
 		map.put("list",list);
@@ -169,6 +153,7 @@ public class PurchaseDAO {
 		
 		rs.close();
 		con.close();
+		stmt.close();
 		return map;
 	}
 

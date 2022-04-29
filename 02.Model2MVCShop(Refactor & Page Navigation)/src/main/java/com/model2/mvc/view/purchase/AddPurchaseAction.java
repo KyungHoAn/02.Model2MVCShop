@@ -42,15 +42,7 @@ public class AddPurchaseAction extends Action{
 		PurchaseService service = new PurchaseServiceImpl();
 		service.addPurchase(purchase);
 		
-		request.setAttribute("purchaseVO", purchase);
-		
-		
-//		if(purchaseVO.getTranCode().equals("1")) {
-//			productVO.setProTranCode("2");
-//		}
-		
-//		ProductService service2 = new ProductServiceImpl();
-//		service2.
+		request.setAttribute("purchase", purchase);
 		
 		System.out.println("test1");
 		return "forward:/purchase/addPurchase.jsp";
