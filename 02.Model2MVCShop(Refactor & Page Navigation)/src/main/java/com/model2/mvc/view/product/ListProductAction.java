@@ -31,22 +31,7 @@ public class ListProductAction extends Action{
 		// web.xml  meta-data 로 부터 상수 추출 
 		int pageSize = Integer.parseInt( getServletContext().getInitParameter("pageSize"));
 		int pageUnit  =  Integer.parseInt(getServletContext().getInitParameter("pageUnit"));
-		search.setPageSize(pageSize);
-		
-//		int page =1;
-//		if(request.getParameter("page")!=null)
-//			page = Integer.parseInt(request.getParameter("page"));
-		
-//		search.setCurrentPage(page);
-//		search.setSearchCondition(request.getParameter("searchCondition"));
-//		search.setSearchKeyword(request.getParameter("searchKeyword"));
-		
-//		String pageunit = getServletContext().getInitParameter("pageSize");
-//		search.setPageSize(Integer.parseInt(pageunit));
-
-		
-//		ProductService service = new ProductServiceImpl();
-//		HashMap<String,Object> map = service.getProductList(search);
+		search.setPageSize(pageSize);	
 		
 		
 		ProductService productService = new ProductServiceImpl();
@@ -58,8 +43,9 @@ public class ListProductAction extends Action{
 		//User 추가한 model과 View 연결
 		request.setAttribute("list", map.get("list"));
 		request.setAttribute("resultPage", resultPage);
-		
-		request.setAttribute("search", search);		
+		System.out.println("resultPage=> "+resultPage);
+		request.setAttribute("search", search);
+		System.out.println("search => "+search);
 		
 		return "forward:/product/listProduct.jsp";
 	}

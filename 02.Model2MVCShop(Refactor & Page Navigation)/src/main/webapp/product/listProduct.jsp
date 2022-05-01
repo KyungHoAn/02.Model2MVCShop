@@ -10,7 +10,7 @@
 <%
 	String menu = request.getParameter("menu");
 	List<Product> list= (List<Product>)request.getAttribute("list");
-	Page resultPage=(Page)request.getAttribute("resultPage");
+	Page resultPage = (Page)request.getAttribute("resultPage");
 	
 	Search search = (Search)request.getAttribute("search");
 	//==> null 을 ""(nullString)으로 변경
@@ -20,7 +20,7 @@
 
 <html>
 <head>
-<title>상품 목록 조회</title>
+<title>회원 목록 조회</title>
 
 <link rel="stylesheet" href="/css/admin.css" type="text/css">
 
@@ -62,8 +62,8 @@
 	<tr>
 		<td align="right">
 			<select name="searchCondition" class="ct_input_g" style="width:80px">
-				<option value="0" <%= (searchCondition.equals("0") ? "selected" : "")%>>회원ID</option>
-				<option value="1" <%= (searchCondition.equals("1") ? "selected" : "")%>>회원명</option>
+				<option value="0" <%= (searchCondition.equals("0") ? "selected" : "")%>>상품NO</option>
+				<option value="1" <%= (searchCondition.equals("1") ? "selected" : "")%>>상품명</option>
 			</select>
 			<input 	type="text" name="searchKeyword" value="<%= searchKeyword %>"  class="ct_input_g" 
 							style="width:200px; height:20px" >
@@ -126,7 +126,18 @@
 		<td align="left"><%= vo.getRegDate() %>
 		</td>
 		<td></td>
-		<td align="left"><%= vo.getProTranCode() %>
+		<td align="left">
+		<%if(menu.equals("manage")){ %>
+			<%= vo.getProTranCode() %>
+			<%if(vo.getProTranCode().equals("0")){ %>
+				판매중
+			<%} else if(vo.getProTranCode().equals("1  ")){ %>
+				구매완료 <a href="/updateTranCode.do?prodNo=<%=vo.getProdNo() %>&tranCode=2">배송하기</a>
+			<%} else if(vo.getProTranCode().equals("2  ")){ %>
+				배송중
+			<%} %>
+		<%} %>
+		
 		</td>	
 	</tr>
 	<tr>
@@ -140,7 +151,8 @@
 	<tr>
 		<td align="center">
 		   <input type="hidden" id="currentPage" name="currentPage" value=""/>
-			<% if( resultPage.getCurrentPage() <= resultPage.getPageUnit() ){ %>
+
+ 			<% if( resultPage.getCurrentPage() <= resultPage.getPageUnit() ){ %>
 					◀ 이전
 			<% }else{ %>
 					<a href="javascript:fncGetProductList('<%=resultPage.getCurrentPage()-1%>')">◀ 이전</a>

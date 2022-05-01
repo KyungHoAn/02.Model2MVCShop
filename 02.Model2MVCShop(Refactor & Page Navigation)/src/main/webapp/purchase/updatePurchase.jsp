@@ -3,7 +3,7 @@
 <%@ page language="java" contentType="text/html; charset=EUC-KR"
 	pageEncoding="EUC-KR"%>
 <%
-Purchase purchase = (Purchase) request.getAttribute("purchasevO");
+Purchase purchase = (Purchase) request.getAttribute("purchase");
 %>
 <html>
 <head>

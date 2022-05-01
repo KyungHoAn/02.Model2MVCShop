@@ -62,13 +62,14 @@ public class ProductDao {
 	public Map<String,Object> getProductList(Search search) throws Exception{
 		Map<String,Object> map = new HashMap<String,Object>();
 		Connection con = DBUtil.getConnection();
-		//String sql = "SELECT p.*,t.*, NVL(t.tran_status_code,0) NTSC from PRODUCT p, transaction t where p.prod_no = t.prod_no(+) ";
-		String sql = "SELECT p.prod_No, p.prod_name, p.price, p.reg_date, NVL(t.tran_status_code,0) NTSC from product p, transaction t where p.prod_no = t.prod_no(+) ";
+		String sql = "SELECT p.*, NVL(t.tran_status_code,0) NTSC from PRODUCT p, transaction t where p.prod_no = t.prod_no(+) ";
+//		String sql = "SELECT p.prod_No, p.prod_name, p.price, p.reg_date, NVL(t.tran_status_code,0) NTSC from product p, transaction t where p.prod_no = t.prod_no(+) ";
+//		String sql = "SELECT p.prod_no, p.prod_name, p.price, p.reg_date, NVL(t.tran_status_code,0) NTSC, count from PRODUCT p, transaction t where p.prod_no = t.prod_no(+) ";
 		if(search.getSearchCondition()!=null) {
-			if(search.getSearchCondition().equals("0")) {
+			if(search.getSearchCondition().equals("0") && !search.getSearchKeyword().equals("") ) {
 				sql+= " AND p.PROD_NO='" + search.getSearchKeyword()
 				+ "'";
-			} else if(search.getSearchCondition().equals("1")) {
+			} else if(search.getSearchCondition().equals("1") && !search.getSearchKeyword().equals("") ) {
 				sql+=" AND p.PROD_NAME='" + search.getSearchKeyword()
 				+ "'";
 			}
@@ -84,8 +85,8 @@ public class ProductDao {
 		sql = makeCurrentPageSql(sql, search);		
 		PreparedStatement pstmt = con.prepareStatement(
 				sql
-//				ResultSet.TYPE_SCROLL_INSENSITIVE,
-//				ResultSet.CONCUR_UPDATABLE
+				,ResultSet.TYPE_SCROLL_INSENSITIVE,
+				ResultSet.CONCUR_UPDATABLE
 				);
 		ResultSet rs = pstmt.executeQuery();
 		System.out.println(search);
@@ -114,14 +115,15 @@ public class ProductDao {
 			prod.setProTranCode(rs.getString("NTSC"));
 			
 			list.add(prod);
+//			if(!rs.next()) {
+//				break;
+//			}
 		}
 		map.put("totalCount", new Integer(totalCount));
 		System.out.println("list.size():"+list.size());
 		map.put("list",list);
 		System.out.println("map().size():"+map.size());
 		
-		rs.close();
-		pstmt.close();
 		con.close();
 		return map;
 	}
@@ -143,7 +145,9 @@ public class ProductDao {
 		con.close();
 	}
 	
-	private int getTotalCount(String sql) throws Exception{
+	// 게시판 Page 처리를 위한 전체 Row(totalCount)  return
+	private int getTotalCount(String sql) throws Exception {
+		
 		sql = "SELECT COUNT(*) "+
 		          "FROM ( " +sql+ ") countTable";
 		
@@ -163,15 +167,16 @@ public class ProductDao {
 		return totalCount;
 	}
 	
-	private String makeCurrentPageSql(String sql, Search search) {
+	// 게시판 currentPage Row 만  return 
+	private String makeCurrentPageSql(String sql , Search search){
 		sql = 	"SELECT * "+ 
-				"FROM (	SELECT inner_table.* ,  ROWNUM AS row_seq " +
-								" FROM ( "+sql+" ) inner_table "+
-								" WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
-				"WHERE row_seq BETWEEN "+((search.getCurrentPage()-1)*search.getPageSize()+1) +" AND "+search.getCurrentPage()*search.getPageSize();
-	
-	System.out.println("ProductDao :: make SQL :: "+ sql);	
-	
-	return sql;
+					"FROM (		SELECT inner_table. * ,  ROWNUM AS row_seq " +
+									" 	FROM (	"+sql+" ) inner_table "+
+									"	WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
+					"WHERE row_seq BETWEEN "+((search.getCurrentPage()-1)*search.getPageSize()+1) +" AND "+search.getCurrentPage()*search.getPageSize();
+		
+		System.out.println("UserDAO :: make SQL :: "+ sql);	
+		
+		return sql;
 	}
 }
